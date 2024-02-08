@@ -21,7 +21,7 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="ObjectListView.Repack.Core3" Version="2.9.2" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.14" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 	<ItemGroup>
