@@ -20,6 +20,9 @@ jobs:
         with:
           dotnet-version: 8.x
 
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.0.2
+
       - name: Restore the application
         run: msbuild WslManager.sln /m /t:Restore /p:Configuration=Release
 
