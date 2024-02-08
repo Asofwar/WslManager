@@ -1,18 +1,13 @@
-name: Build WslManager App
+name: Build and Publish WslManager App
 
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-2019
-
-    strategy:
-      matrix:
-        configuration: [Debug, Release]
 
     steps:
       - name: Checkout
@@ -20,22 +15,31 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Install Chocolatey
+        if: runner.os == 'Windows'
+        run: |
+          Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+
+      - name: Install MSBuild
+        if: runner.os == 'Windows'
+        run: choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.19041 --quiet --includeRecommended"
+
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 8.x
 
       - name: Restore the application
-        run: msbuild WslManager.sln /m /t:Restore /p:Configuration=${{ matrix.configuration }}
+        run: msbuild WslManager.sln /m /t:Restore /p:Configuration=Release
 
       - name: Create the app package
-        run: msbuild WslManager.Package\WslManager.Package.wapproj /m /t:Publish /p:Configuration=${{ matrix.configuration }} /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundle=Always /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx /p:PackageCertificatePassword=${{ secrets.Pfx_Key }} /p:Platform=x64 /p:AppxBundlePlatforms=x64
+        run: msbuild WslManager.Package\WslManager.Package.wapproj /m /t:Publish /p:Configuration=Release /p:UapAppxPackageBuildMode=StoreUpload /p:AppxBundle=Always /p:PackageCertificateKeyFile=GitHubActionsWorkflow.pfx /p:PackageCertificatePassword=${{ secrets.Pfx_Key }} /p:Platform=x64 /p:AppxBundlePlatforms=x64
 
       - name: Compress archive
-        run: Compress-Archive -Path "WslManager.Package/AppPackages" -DestinationPath "WslManager.Package/AppPackages_${{ matrix.configuration }}.zip" -CompressionLevel Optimal
+        run: Compress-Archive -Path "WslManager.Package/AppPackages" -DestinationPath "WslManager.Package/AppPackages_Release.zip" -CompressionLevel Optimal
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
         with:
           name: MSIX Bundle Package
-          path: "WslManager.Package/AppPackages_${{ matrix.configuration }}.zip"
+          path: "WslManager.Package/AppPackages_Release.zip"
