@@ -20,7 +20,13 @@ jobs:
         run: |
           Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
 
+      - name: Check if MSBuild is installed
+        run: msbuild /version
+        continue-on-error: true
+        id: check_msbuild
+
       - name: Install MSBuild
+        if: steps.check_msbuild.outcome != 'success'
         run: |
           choco install -y visualstudio2019buildtools --version=16.11.7.0
           refreshenv
