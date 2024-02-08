@@ -15,10 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install MSBuild
-        if: runner.os == 'Windows'
-        run: choco install visualstudio2019buildtools --package-parameters "--add Microsoft.VisualStudio.Workload.MSBuildTools --add Microsoft.VisualStudio.Component.VC.Tools.x86.x64 --add Microsoft.VisualStudio.Component.Windows10SDK.19041" -y
-
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v1
         with:
